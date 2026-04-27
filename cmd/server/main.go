@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"crypto/rand"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rioverde/url-shortener/internal/config"
 	"github.com/Rioverde/url-shortener/internal/service"
-	"github.com/Rioverde/url-shortener/internal/storage"
+	"github.com/Rioverde/url-shortener/internal/storage/sqlite"
 )
 
 const (
@@ -16,21 +16,27 @@ const (
 
 func main() {
 
+	// Load the configuration
 	cfg := config.MustLoad()
 
+	// Set up the logger based on the environment
 	log := setupLogger(cfg.Env)
 
+	// Log the startup message with the environment
 	log.Info("Starting URL Shortener Server", "env", cfg.Env)
 
-	// TODO(Init Sorage): init Storage
+	// Initialize the SQLite storage. If it fails, log the error and exit.
+	storage, err := sqlite.NewStorage(cfg.StoragePath)
+	if err != nil {
+		log.Error("failed to create SQLite storage", "error", err)
+		os.Exit(1)
+	}
 
-	// TODO(Init Sorage): init Logger
-
-	repo := storage.NewMapStorage()
-
+	// Initialize the code generator using crypto/rand as the entropy source
 	gen := service.NewCryptoGenerator(rand.Reader)
 
-	svc := service.NewURLService(repo, gen)
+	// Initialize the URL service with the storage and code generator
+	svc := service.NewURLService(storage, gen)
 
 	_ = svc
 

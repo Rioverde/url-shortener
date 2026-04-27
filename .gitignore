@@ -103,3 +103,4 @@ logs/
 
 # oh-my-claudecode local state (per-developer, never commit)
 .omc/
+*.db

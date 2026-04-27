@@ -2,20 +2,17 @@ package service
 
 import (
 	"fmt"
-
-	"github.com/Rioverde/url-shortener/internal/storage"
 )
 
 const sizeOfShortString = 6
-
-var _ URLRepository = (*storage.MapStorage)(nil)
 
 // URLRepository defines the storage contract that URLService depends on.
 // The interface lives in this (consumer) package so the service is not
 // coupled to any specific storage implementation.
 type URLRepository interface {
-	Put(key, url string)
-	Get(key string) (string, bool)
+	SaveUrl(key, link string) error
+	GetUrl(key string) (string, error)
+	DeleteUrl(key string) error
 }
 
 // URLService holds the business logic for shortening and resolving URLs.
@@ -46,7 +43,10 @@ func (s *URLService) Shorten(longURL string) (string, error) {
 	}
 
 	// Save to memory the string
-	s.repo.Put(key, longURL)
+	err = s.repo.SaveUrl(key, longURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to save URL: %w", err)
+	}
 
 	return key, nil
 }
