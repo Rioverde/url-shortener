@@ -32,6 +32,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Ensure the database connection is closed when main exits. Log any error that occurs during close.
+	defer func() {
+		if err := storage.Close(); err != nil {
+			log.Error("failed to close database connection", "error", err)
+		}
+	}()
+
 	// Initialize the code generator using crypto/rand as the entropy source
 	gen := service.NewCryptoGenerator(rand.Reader)
 

@@ -99,3 +99,12 @@ func (m *Storage) DeleteUrl(key string) error {
 
 	return nil
 }
+
+func (m *Storage) Close() error {
+	const op = "storage.sqlite.Close"
+	// Close the database connection
+	if err := m.db.Close(); err != nil {
+		return fmt.Errorf("%s: failed to close database: %w", op, err)
+	}
+	return nil
+}
