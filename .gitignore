@@ -1,0 +1,105 @@
+# ---------- Go ----------
+
+# Compiled binaries — anything matching the cmd folder names ends up at the
+# repo root when you run `go build` without `-o`. Ignore the common ones
+# plus a few cross-platform variants.
+/url-shortener
+/server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries left behind by `go test -c` or crashes
+*.test
+
+# Coverage and profiling output
+*.out
+coverage.txt
+coverage.html
+cover.out
+profile.out
+*.prof
+
+# `go work` local overrides — these are per-developer and should not be shared
+go.work
+go.work.sum
+
+# Vendored dependencies — only commit if the team agreed to vendor;
+# otherwise rely on go.mod / go.sum and ignore the directory.
+/vendor/
+
+# ---------- Secrets and local config ----------
+
+# Anything env-shaped should never be committed.
+.env
+.env.*
+!.env.example
+
+# Common local override paths
+config/local.*
+config/*.local.*
+*.local.yaml
+*.local.yml
+*.local.json
+
+# ---------- IDE / editor ----------
+
+# JetBrains (GoLand, IntelliJ)
+.idea/
+*.iml
+
+# VS Code — keep shareable settings.json/launch.json if you commit them
+# explicitly; ignore everything else by default.
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vim / Neovim swap and undo files
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ---------- OS ----------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+.Trash-*
+
+# ---------- Tooling ----------
+
+# Air / live-reload tooling
+tmp/
+.air.toml.local
+
+# delve debugger
+__debug_bin
+__debug_bin*
+
+# golangci-lint cache
+.golangci-cache/
+
+# Local logs
+*.log
+logs/
+
+# oh-my-claudecode local state (per-developer, never commit)
+.omc/
