@@ -30,6 +30,13 @@ func NewURLService(repo URLRepository, gen CodeGenerator) *URLService {
 	}
 }
 
+func (s *URLService) GetUrl(key string) (string, error) {
+	if key == "" {
+		return "", ErrEmptyKey
+	}
+	return s.repo.GetUrl(key)
+}
+
 // Shorten is the main function of the URLService
 func (s *URLService) Shorten(longURL string) (string, error) {
 	if longURL == "" {

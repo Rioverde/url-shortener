@@ -3,8 +3,11 @@ package main
 import (
 	"crypto/rand"
 	"log/slog"
+	"net/http"
 	"os"
 
+	"github.com/Rioverde/url-shortener/internal/api/handler/redirect"
+	"github.com/Rioverde/url-shortener/internal/api/handler/save"
 	mvLogger "github.com/Rioverde/url-shortener/internal/api/middleware"
 	"github.com/Rioverde/url-shortener/internal/config"
 	"github.com/Rioverde/url-shortener/internal/domain"
@@ -49,14 +52,32 @@ func main() {
 	// Initialize the URL service with the storage and code generator
 	svc := domain.NewURLService(storage, gen)
 
-	_ = svc
-
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(mvLogger.New(log))
 	r.Use(middleware.Recoverer)
+
+	r.Route("/url", func(r chi.Router) {
+		r.Post("/", save.New(log, svc))
+	})
+
+	r.Get("/{alias}", redirect.New(log, svc))
+
+	srv := &http.Server{
+		Addr:         cfg.HTTPServer.Address,
+		Handler:      r,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	log.Info("starting HTTP server", "address", cfg.HTTPServer.Address)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start HTTP server", "error", err)
+		os.Exit(1)
+	}
 
 }
 
