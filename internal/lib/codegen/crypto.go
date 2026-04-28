@@ -1,4 +1,4 @@
-package service
+package codegen
 
 import (
 	"crypto/rand"
@@ -14,27 +14,26 @@ const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 // Anything shorter would be too easy to brute-force.
 const minKeyLength = 5
 
-type CodeGenerator interface {
-	GenerateRandomString(n int) (string, error)
-}
-
-type cryptoGenerator struct {
-	// RandReader is the entropy source used by GenerateRandomString.
-	// It defaults to crypto/rand.Reader and may be swapped in tests
-	// to make output deterministic.
+// CryptoGenerator produces random short codes drawn from alphabet using a
+// cryptographic source of entropy. It satisfies domain.CodeGenerator.
+type CryptoGenerator struct {
+	// rand is the entropy source used by GenerateRandomString.
+	// In production pass crypto/rand.Reader.
+	// In tests pass a deterministic io.Reader to make output reproducible.
 	rand io.Reader
 }
 
-func NewCryptoGenerator(r io.Reader) CodeGenerator {
-	return &cryptoGenerator{
+// NewCryptoGenerator builds a CryptoGenerator that draws random bytes from r.
+func NewCryptoGenerator(r io.Reader) *CryptoGenerator {
+	return &CryptoGenerator{
 		rand: r,
 	}
 }
 
 // GenerateRandomString returns a random string of length n drawn from alphabet.
-// It returns an error if n is less than minKeyLength,
+// It returns an error wrapping ErrKeyTooShort if n is less than minKeyLength,
 // or if the underlying entropy source fails.
-func (g *cryptoGenerator) GenerateRandomString(n int) (string, error) {
+func (g *CryptoGenerator) GenerateRandomString(n int) (string, error) {
 	if n < minKeyLength {
 		return "", fmt.Errorf("%w: must be at least %d, got %d", ErrKeyTooShort, minKeyLength, n)
 	}

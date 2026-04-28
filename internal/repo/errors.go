@@ -1,4 +1,4 @@
-package storage
+package repo
 
 // error definitions for the storage package
 import "errors"

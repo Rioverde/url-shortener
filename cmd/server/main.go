@@ -5,9 +5,13 @@ import (
 	"log/slog"
 	"os"
 
+	mvLogger "github.com/Rioverde/url-shortener/internal/api/middleware"
 	"github.com/Rioverde/url-shortener/internal/config"
-	"github.com/Rioverde/url-shortener/internal/service"
-	"github.com/Rioverde/url-shortener/internal/storage/sqlite"
+	"github.com/Rioverde/url-shortener/internal/domain"
+	"github.com/Rioverde/url-shortener/internal/lib/codegen"
+	"github.com/Rioverde/url-shortener/internal/repo/sqlite"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
@@ -40,14 +44,19 @@ func main() {
 	}()
 
 	// Initialize the code generator using crypto/rand as the entropy source
-	gen := service.NewCryptoGenerator(rand.Reader)
+	gen := codegen.NewCryptoGenerator(rand.Reader)
 
 	// Initialize the URL service with the storage and code generator
-	svc := service.NewURLService(storage, gen)
+	svc := domain.NewURLService(storage, gen)
 
 	_ = svc
 
-	// TODO(Init Sorage): init Server
+	r := chi.NewRouter()
+
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(mvLogger.New(log))
+	r.Use(middleware.Recoverer)
 
 }
 
@@ -61,7 +70,7 @@ func setupLogger(env string) *slog.Logger {
 		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	default:
 		// In local and dev environments, we want a human-readable logger with debug level
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	}
 
 	return log

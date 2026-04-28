@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Rioverde/url-shortener/internal/storage"
+	"github.com/Rioverde/url-shortener/internal/repo"
 	// initialize the SQLite driver
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -40,7 +40,7 @@ func (m *Storage) SaveUrl(key, link string) error {
 	if err != nil {
 		// check if the error is a SQLite constraint violation (e.g., duplicate key)
 		if IsUniqueConstraintError(err) {
-			return fmt.Errorf("%s: key already exists: %w", op, storage.ErrKeyAlreadyExists)
+			return fmt.Errorf("%s: key already exists: %w", op, repo.ErrKeyAlreadyExists)
 		}
 		return fmt.Errorf("%s: failed to execute statement: %w", op, err)
 	}
@@ -63,7 +63,7 @@ func (m *Storage) GetUrl(key string) (string, error) {
 	err = stmt.QueryRow(key).Scan(&url)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", fmt.Errorf("%s: key not found: %w", op, storage.ErrKeyNotFound)
+			return "", fmt.Errorf("%s: key not found: %w", op, repo.ErrKeyNotFound)
 		}
 		return "", fmt.Errorf("%s: failed to execute statement: %w", op, err)
 	}
@@ -94,7 +94,7 @@ func (m *Storage) DeleteUrl(key string) error {
 	}
 	// If no rows were affected, it means the key was not found, so return a wrapped error indicating that
 	if rowsAffected == 0 {
-		return fmt.Errorf("%s: key not found: %w", op, storage.ErrNoRowsAffected)
+		return fmt.Errorf("%s: key not found: %w", op, repo.ErrNoRowsAffected)
 	}
 
 	return nil
